@@ -1,16 +1,21 @@
+<!-- login.component.html -->
 <div class="login-container surface-card p-4 shadow-2 border-round w-full lg:w-6">
     <div class="text-center mb-5">
-        <div class="text-white-900 text-3xl font-medium mb-3">Fazer Login</div>
-        <div class="text-red-300 font-medium line-height-3" *ngIf="loginInvalid">Login ou senha inválidos. Verifique os
-            campos e tente novamente.</div>
+        <h2>Login</h2>
+        <div class="text-red-600 font-medium line-height-3" *ngIf="loginInvalid">Login ou senha inválidos. Verifique os campos e tente novamente.</div>
     </div>
     <div>
-        <label htmlFor="usuario" class="block text-white-900 font-medium mb-2">Usuario:</label>
+        
+        <label htmlFor="usuario" class="block text-white-900 font-medium mb-2">Usuário:</label>
         <input pInputText class="w-full mb-3" type="text" id="usuario" [(ngModel)]="usuario" placeholder="Insira seu login...">
 
         <label htmlFor="senha" class="block text-white-900 font-medium mb-2">Senha:</label>
         <input class="w-full mb-3" pInputText type="password" id="senha" [(ngModel)]="senha" placeholder="Insira sua senha...">
 
-        <p-button label="Logar" class="w-full" (click)="fazerLogin()"></p-button>
+        <p-button label="Acessar" [rounded]="true" severity="success" class="w-full" (click)="fazerLogin()"></p-button>
+        <br><br>
+        <p-button label="Esqueceu sua senha?" [rounded]="true" severity="success" class="w-full"></p-button>
+        
+        
     </div>
 </div>

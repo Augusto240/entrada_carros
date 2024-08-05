@@ -1,7 +1,19 @@
+/* styles.css */
 @import "./assets/themes/theme.css";
 @import "primeng/resources/primeng.css";
 @import "primeicons/primeicons.css";
 @import "primeflex/primeflex.css";
+
 body {
     font-family: var(--font-family);
+    background-color: #D4DED6; /* cor de fundo desejada */
 }
+
+/* Adicione isso para garantir que a cor de fundo se aplique a todos os elementos */
+html, body, app-root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #D4DED6;
+}
+

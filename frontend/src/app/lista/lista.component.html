@@ -1,7 +1,7 @@
 <app-menu></app-menu>
 <br>
 <br>
-<h2>Veículos registrados</h2>
+<h2>Veículos Registrados</h2>
 <br>
 <br>
 <div *ngIf="tipo_pesquisa == 1" class="input-group">
@@ -10,7 +10,7 @@
         <input [(ngModel)]="placaPesquisada" (keyup)="filtrarPlacas()" class="pesquisar" pInputText
             placeholder="Pesquisar por placa...">
     </span>
-    <p-button size="small" [text]="true" severity="secondary" label="Mudar filtro" (click)="trocarPesquisa()">
+    <p-button size="small" severity="success" label="Mudar filtro" (click)="trocarPesquisa()">
     </p-button>
 </div>
 <div *ngIf="tipo_pesquisa == 2" class="input-group">
@@ -19,7 +19,7 @@
         <input pInputText placeholder="Pesquisar por etiqueta..." class="pesquisar" [(ngModel)]="etiquetaPesquisada"
             (keyup)="filtrarEtiquetas()">
     </span>
-    <p-button size="small" [text]="true" severity="secondary" label="Mudar filtro" (click)="trocarPesquisa()">
+    <p-button size="small" severity="success" styleClass="custom-button" label="Mudar filtro" (click)="trocarPesquisa()">
     </p-button>
 </div>
 <div *ngIf="tipo_pesquisa == 3" class="input-group">
@@ -27,7 +27,7 @@
         <i class="pi pi-search"></i>
         <input pInputText placeholder="Pesquisar por nome..." class="pesquisar" [(ngModel)]="nomePesquisado" (keyup)="filtrarNome()">
     </span>
-    <p-button size="small" [text]="true" severity="secondary" label="Mudar filtro" (click)="trocarPesquisa()">
+    <p-button size="small"  severity="success" label="Mudar filtro" (click)="trocarPesquisa()">
     </p-button>
 </div>
 <div *ngIf="carregando">

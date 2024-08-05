@@ -31,6 +31,7 @@ import { MenuComponent } from './menu/menu.component';
 import { NovousuarioComponent } from './novousuario/novousuario.component';
 import { DropdownModule } from 'primeng/dropdown';
 
+
 LOAD_WASM().subscribe();
 
 @NgModule({

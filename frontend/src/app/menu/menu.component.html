@@ -1,13 +1,13 @@
 <div class="botoes">
     <div class="links">
-        <p-button *ngIf="admin" [text]="true" (click)="cadastrar()" id="cadastrar" label="Cadastrar registro" icon="pi pi-plus"></p-button>
-        <p-button *ngIf="admin" [text]="true" (click)="usuario()" id="usuario" label="Cadastrar usuário" icon="pi pi-plus"></p-button>
-        <p-button [text]="true" severity="secondary" (click)="lista()" id="lista" label="Lista" icon="pi pi-list"></p-button>
-        <p-button [text]="true" severity="secondary" (click)="mqtt()" id="mensagens" label="Mensagens" icon="pi pi-info"></p-button>
-        <p-button [text]="true" severity="secondary" (click)="scanner()" id="scanner" label="Pesquisa com QRcode" icon="pi pi-qrcode"></p-button>
+        <p-button *ngIf="admin" [text]="true" styleClass="custom-button" (click)="cadastrar()" id="cadastrar" label="Cadastrar registro" icon="pi pi-plus"></p-button>
+        <p-button *ngIf="admin" [text]="true" styleClass="custom-button" (click)="usuario()" id="usuario" label="Cadastrar usuário" icon="pi pi-plus"></p-button>
+        
+        <p-button  severity="success"  styleClass="custom-button" (click)="lista()" id="lista" label="Lista" icon="pi pi-list"></p-button>
+        <p-button  severity="success" styleClass="custom-button" (click)="mqtt()" id="mensagens" label="Mensagens" icon="pi pi-info"></p-button>
+        <p-button  severity="success"  styleClass="custom-button" (click)="scanner()" id="scanner" label="Pesquisa com QRcode" icon="pi pi-qrcode"></p-button>
     </div>
     <div class="logout">
-        <p-button [text]="true" [raised]="true" severity="danger" (click)="logout()" id="logout" label="Sair" icon="pi pi-sign-out"></p-button>
+        <p-button  severity="danger" (click)="logout()" id="logout" label="Sair" icon="pi pi-sign-out"></p-button>
     </div>
 </div>
-<hr>

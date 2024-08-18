@@ -17,9 +17,14 @@ var placaRouter = require('./routes/placa');
 var entradaRouter = require('./routes/entrada');
 var mqttRouter = require('./routes/mqtt').router; // Importa o router do mqtt.js
 var passwordRecoveryRouter = require('./routes/passwordRecovery');
+
 require('dotenv').config();
 
 var app = express();
+
+console.log('EMAIL_USER:', process.env.EMAIL_USER);
+console.log('EMAIL_PASS:', process.env.EMAIL_PASS);
+
 
 app.use(cors({
     origin: "*",
@@ -55,6 +60,7 @@ app.use('/entrada', entradaRouter);
 app.use('/mqtt', mqttRouter);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/password-recovery', passwordRecoveryRouter);
+
 
 const sequelize = new Sequelize(dbConfig);
 

@@ -28,11 +28,5 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DATE,
         },
     });
-
-    // Se houver associações, defina-as aqui
-    User.associate = function(models) {
-        // Associações
-    };
-
-    return User;
-};
+    module.exports = User;
+}

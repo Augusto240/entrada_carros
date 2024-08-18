@@ -8,27 +8,20 @@ const path = require('path');
 const moment = require('moment');
 
 let ultimaMensagem = null;
-/**
- * @swagger
- * tags:
- *   name: MQTT
- *   description: Operações relacionadas a mensagens do protocolo MQTT
- */
 
 const client = mqtt.connect({
     protocol: 'mqtt',
-    host: 'broker-mqtt',
-    port: '1884',
+    host: 'localhost', // ou o endereço do broker
+    port: 1883,
 });
 
 client.on('connect', () => {
-    console.log('Conectado ao broker');
-    client.subscribe('carro/cam_vec_1');
+    console.log('Conectado ao broker MQTT');
 });
 
 client.on('error', (err) => {
-    console.log('Erro ao conectar no broker:', err);
-})
+    console.error('Erro ao conectar ao broker MQTT:', err);
+});
 
 var con = mysql.createPool({ //cria pool com o banco de dados
     host: 'db',
@@ -77,19 +70,16 @@ client.on('message', function (topic, message) {
 
             // Caminho para salvamento da imagem
             const nomeArquivo = `imagem_${Date.now()}.png`
-            const caminhoArquivo = `/imagens/${nomeArquivo}`
+            const caminhoArquivo = path.join(__dirname, 'imagens', nomeArquivo);
             fs.writeFileSync(caminhoArquivo, imgBuffer);
-            
 
             // Busca o idCarro
             const get_id = 'SELECT idCarro FROM carro WHERE placaCarro = ?';
-            con.query(get_id, [dados.placa], function (erroComandoSQL, result, fields) {
+            con.query(get_id, [dados.placa], function (erroComandoSQL, result) {
                 if (erroComandoSQL) {
                     conexao.release();
                     throw erroComandoSQL;
                 }
-
-                console.log(result);
 
                 // Verifica se o resultado da consulta é válido
                 if (result.length > 0 && result[0].idCarro !== null) {
@@ -99,9 +89,8 @@ client.on('message', function (topic, message) {
                     const query = 'INSERT INTO historicoentrada(placa, dataHora, img, idCarroRel) VALUES (?, ?, ?, ?)';
                     const dataHora = new Date();
                     const valores = [dados.placa, dataHora, nomeArquivo, id];
-                    console.log(valores)
 
-                    con.query(query, valores, function (erroComandoSQL, result, fields) {
+                    con.query(query, valores, function (erroComandoSQL, result) {
                         conexao.release();
                         if (erroComandoSQL) {
                             throw erroComandoSQL;
@@ -128,14 +117,6 @@ client.on('message', function (topic, message) {
     }
 });
 
-/**
- * @swagger
- * /api/mqtt:
- *  get:
- *      summary: Retorna última mensagem
- *      description: Retorna última mensagem enviada ao tópico MQTT
- *      tags: [MQTT]
- */
 router.get('/ult-msg', verificarToken, function (req, res) {
     if (ultimaMensagem) {
         res.status(200).send(ultimaMensagem);
@@ -168,9 +149,9 @@ function removerImagensAntigas() {
                     fs.unlink(filePath, (err) => {
                         if (err) {
                             console.error(`Erro ao apagar o arquivo ${file}.`);
-                          } else {
+                        } else {
                             console.log(`Arquivo ${file} removido com sucesso.`);
-                          }
+                        }
                     });
                 }
             });
@@ -178,4 +159,7 @@ function removerImagensAntigas() {
     });
 }
 
-module.exports = router, client;
+module.exports = {
+    router, // Exporta o router
+    client  // Exporta o cliente MQTT
+};

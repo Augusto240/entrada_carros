@@ -20,7 +20,8 @@ SET time_zone = "+00:00";
 --
 -- Banco de dados: `dbentrada`
 --
-CREATE DATABASE IF NOT EXISTS `dbentrada` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS `dbentrada` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
 USE `dbentrada`;
 
 -- --------------------------------------------------------
@@ -32,7 +33,7 @@ USE `dbentrada`;
 CREATE TABLE `aluno` (
   `matriculaAluno` bigint NOT NULL,
   `noAluno` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Acionadores `aluno`
@@ -75,7 +76,7 @@ CREATE TABLE `carro` (
   `validadeEtiqueta` datetime NOT NULL,
   `matriculaRel` bigint NOT NULL,
   `placaCarro` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Acionadores `carro`
@@ -112,7 +113,7 @@ CREATE TABLE `login` (
   `idlogin` int NOT NULL,
   `usuario` varchar(150) NOT NULL,
   `senha` varchar(150) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -126,7 +127,7 @@ CREATE TABLE `logs` (
   `usuario` varchar(50) NOT NULL,
   `dataoperacao` datetime NOT NULL,
   `detalhe` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -245,3 +246,36 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- Verifique se a tabela `users` já foi criada e está com a seguinte estrutura:
+
+CREATE TABLE IF NOT EXISTS `users` (
+    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(255) NOT NULL,
+    `email` VARCHAR(255) NOT NULL,
+    `password` VARCHAR(255) NOT NULL,
+    `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Tabela `tokens` que faz referência à tabela `users`
+
+CREATE TABLE `tokens` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `userId` INT NOT NULL,
+    `token` VARCHAR(255) NOT NULL,
+    `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- A coluna 'expiresAt' será usada para armazenar a data de expiração do token.
+    `expiresAt` TIMESTAMP AS (`createdAt` + INTERVAL 1 HOUR) STORED,
+    CONSTRAINT `fk_user` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- Opcional: criar um evento para limpar tokens expirados automaticamente
+CREATE EVENT delete_expired_tokens
+ON SCHEDULE EVERY 1 HOUR
+DO
+    DELETE FROM tokens WHERE expiresAt < NOW();
+
+ALTER TABLE users
+ADD COLUMN resetToken VARCHAR(255),
+ADD COLUMN resetTokenExpire DATETIME;

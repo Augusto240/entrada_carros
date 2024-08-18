@@ -1,13 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const HistoricoEntrada = sequelize.define('HistoricoEntrada', {
-        idHistoricoEntrada: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-            allowNull: false,
-        },
         placa: {
-            type: DataTypes.STRING(50),
+            type: DataTypes.STRING,
             allowNull: false,
         },
         dataHora: {
@@ -15,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         img: {
-            type: DataTypes.STRING(250),
+            type: DataTypes.STRING,
             allowNull: false,
         },
         idCarroRel: {
@@ -30,4 +24,6 @@ module.exports = (sequelize, DataTypes) => {
             as: 'carro',
         });
     };
-}
+
+    return HistoricoEntrada;
+};

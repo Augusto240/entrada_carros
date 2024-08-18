@@ -11,7 +11,9 @@ require('dotenv').config(); // Carregar variáveis de ambiente
 
 // Configurar o transporte de e-mail
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // ou outro serviço de e-mail
+    host: 'smtp-mail.outlook.com',
+    port: 587,
+    secure: true, // ou outro serviço de e-mail
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -33,8 +35,8 @@ router.post('/request', async (req, res) => {
         await user.update({ resetPasswordToken: token, resetPasswordExpires: Date.now() + 3600000 });
 
         const mailOptions = {
+            from: process.env.EMAIL_USER,
             to: email,
-            from: 'your-email@example.com',
             subject: 'Recuperação de Senha',
             text: `Você está recebendo este e-mail porque recebemos uma solicitação de recuperação de senha para sua conta.\n\n
             Por favor, clique no seguinte link ou cole-o no seu navegador para concluir o processo:\n\n

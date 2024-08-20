@@ -30,6 +30,7 @@ import { AnaliseComponent } from './analise/analise.component';
 import { MenuComponent } from './menu/menu.component';
 import { NovousuarioComponent } from './novousuario/novousuario.component';
 import { DropdownModule } from 'primeng/dropdown';
+import { PasswordresetComponent } from './passwordreset/passwordreset.component';
 
 
 LOAD_WASM().subscribe();
@@ -45,7 +46,8 @@ LOAD_WASM().subscribe();
     ScannerComponent,
     AnaliseComponent,
     MenuComponent,
-    NovousuarioComponent
+    NovousuarioComponent,
+    PasswordresetComponent
   ],
   imports: [
     BrowserModule,

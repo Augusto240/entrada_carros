@@ -31,7 +31,8 @@ import { MenuComponent } from './menu/menu.component';
 import { NovousuarioComponent } from './novousuario/novousuario.component';
 import { DropdownModule } from 'primeng/dropdown';
 import { PasswordresetComponent } from './passwordreset/passwordreset.component';
-
+import { ToastModule } from 'primeng/toast'
+import { MessagesModule } from 'primeng/messages';
 
 LOAD_WASM().subscribe();
 
@@ -51,6 +52,7 @@ LOAD_WASM().subscribe();
   ],
   imports: [
     BrowserModule,
+    MessagesModule ,
     AppRoutingModule,
     RouterModule,
     InputTextModule,
@@ -58,6 +60,7 @@ LOAD_WASM().subscribe();
     CheckboxModule,
     TableModule,
     ButtonModule,
+    ToastModule,
     HttpClientModule,
     InputNumberModule,
     MqttModule.forRoot({

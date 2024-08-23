@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const passwordRecoveryController = require('../controllers/passwordRecoveryController');
 const { User } = require('../models/user'); // Ajuste conforme o nome do modelo
-require('dotenv').config(); // Carregar variáveis de ambiente
+require('dotenv').config({ path: require('path').resolve('../.env') });; // Carregar variáveis de ambiente
 
 // Configurar o transporte de e-mail
 const transporter = nodemailer.createTransport({

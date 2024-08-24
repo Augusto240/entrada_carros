@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MqttModule } from 'ngx-mqtt';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxScannerQrcodeModule, LOAD_WASM } from 'ngx-scanner-qrcode';
@@ -64,6 +64,7 @@ LOAD_WASM().subscribe();
     ButtonModule,
     ToastModule,
     HttpClientModule,
+    ReactiveFormsModule,
     InputNumberModule,
     MqttModule.forRoot({
       hostname: 'test.mosquitto.org',

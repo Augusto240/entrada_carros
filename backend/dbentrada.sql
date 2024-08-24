@@ -116,6 +116,7 @@ CREATE TABLE `login` (
   `usuario` varchar(150) NOT NULL,
   `senha` varchar(150) NOT NULL,
   `email` varchar(150) NOT NULL UNIQUE,
+  `role` varchar(150) NOT NULL,
   `resetToken` varchar(64) DEFAULT NULL,
   `resetTokenExpire` bigint DEFAULT NULL,
   PRIMARY KEY (`idlogin`)
@@ -212,3 +213,6 @@ $$
 DELIMITER ;
 
 COMMIT;
+
+INSERT INTO login (usuario, senha, role) VALUES ('guto', 'guto', 'admin');
+INSERT INTO login (usuario, senha, role) VALUES ('auggie', 'auggie', 'admin');

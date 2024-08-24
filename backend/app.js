@@ -4,7 +4,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
-var bodyParser = require('body-parser');
 var Sequelize = require('sequelize');
 var dbConfig = require('./config/dbentrada');
 var swaggerJSDoc = require('swagger-jsdoc');
@@ -22,7 +21,6 @@ require('dotenv').config();
 
 var app = express();
 
-
 app.use(cors({
     origin: "*",
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
@@ -32,8 +30,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 
 const opcoes = {
     definition: {
@@ -57,7 +53,6 @@ app.use('/entrada', entradaRouter);
 app.use('/mqtt', mqttRouter);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/password-recovery', passwordRecoveryRouter);
-
 
 const sequelize = new Sequelize(dbConfig);
 

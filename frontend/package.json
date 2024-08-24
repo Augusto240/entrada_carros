@@ -19,6 +19,7 @@
     "@angular/platform-browser-dynamic": "^16.2.12",
     "@angular/router": "^16.2.12",
     "@zxing/library": "^0.20.0",
+    "cors": "^2.8.5",
     "ngx-cookie-service": "^16.1.0",
     "ngx-mqtt": "^16.1.0",
     "ngx-scanner": "^0.0.0",

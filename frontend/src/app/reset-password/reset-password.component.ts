@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { Message } from 'primeng/api';
 
 @Component({
   selector: 'app-reset-password',
@@ -10,47 +11,36 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ResetPasswordComponent {
   resetForm: FormGroup;
-  token: string | null;
+  messages: Message[] = [];
   successMessage: string = '';
   errorMessage: string = '';
 
-  constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private http: HttpClient,
-    private router: Router
-  ) {
+  constructor(private fb: FormBuilder, private http: HttpClient) {
     this.resetForm = this.fb.group({
       password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validator: this.passwordsMatch });
-
-    this.token = this.route.snapshot.queryParamMap.get('token');
+      confirmPassword: ['']
+    }, { validators: this.passwordsMatch });
   }
 
-  passwordsMatch(group: FormGroup): { [key: string]: any } | null {
+  passwordsMatch(group: FormGroup) {
     const password = group.get('password')?.value;
     const confirmPassword = group.get('confirmPassword')?.value;
-
     return password === confirmPassword ? null : { notMatching: true };
   }
 
   onSubmit() {
-    if (this.resetForm.valid && this.token) {
-      const { password } = this.resetForm.value;
-
-      this.http.post('/api/reset-password', { token: this.token, password })
-        .subscribe({
-          next: (response: any) => {
-            this.successMessage = 'Senha alterada com sucesso!';
-            setTimeout(() => {
-              this.router.navigate(['/login']);
-            }, 3000);
-          },
-          error: (error) => {
-            this.errorMessage = 'Erro ao alterar a senha. Tente novamente.';
-          }
-        });
+    if (this.resetForm.valid) {
+      const password = this.resetForm.get('password')?.value;
+      this.http.post(`${environment.apiUrl}/password-recovery/reset`, { password }).subscribe(
+        response => {
+          this.successMessage = 'Senha redefinida com sucesso.';
+          this.messages = [{ severity: 'success', summary: 'Sucesso', detail: this.successMessage }];
+        },
+        error => {
+          this.errorMessage = 'Erro ao redefinir a senha. Tente novamente.';
+          this.messages = [{ severity: 'error', summary: 'Erro', detail: this.errorMessage }];
+        }
+      );
     }
   }
 }

@@ -1,26 +1,27 @@
 // app.js
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var cors = require('cors');
-var Sequelize = require('sequelize');
-var dbConfig = require('./config/dbentrada');
-var swaggerJSDoc = require('swagger-jsdoc');
-var swaggerUi = require('swagger-ui-express');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const cors = require('cors');
+const Sequelize = require('sequelize');
+const dbConfig = require('./config/dbentrada'); // Configuração do Sequelize
+const swaggerJSDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
-var indexRouter = require('./routes/index');
-var alunocarroRouter = require('./routes/alunocarro');
-var loginRouter = require('./routes/login');
-var placaRouter = require('./routes/placa');
-var entradaRouter = require('./routes/entrada');
-var mqttRouter = require('./routes/mqtt').router; // Importa o router do mqtt.js
-var passwordRecoveryRouter = require('./routes/passwordRecovery');
+const indexRouter = require('./routes/index');
+const alunocarroRouter = require('./routes/alunocarro');
+const loginRouter = require('./routes/login');
+const placaRouter = require('./routes/placa');
+const entradaRouter = require('./routes/entrada');
+const mqttRouter = require('./routes/mqtt').router; // Importa o router do mqtt.js
+const passwordRecoveryRouter = require('./routes/passwordRecovery');
 
 require('dotenv').config();
 
-var app = express();
+const app = express();
 
+// Configurações de middleware
 app.use(cors({
     origin: "*",
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
@@ -31,7 +32,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const opcoes = {
+// Configuração do Swagger
+const options = {
     definition: {
         openapi: '3.0.0',
         info: {
@@ -43,7 +45,7 @@ const opcoes = {
     apis: ['./routes/*.js'],
 };
 
-const swaggerSpec = swaggerJSDoc(opcoes);
+const swaggerSpec = swaggerJSDoc(options);
 
 app.use('/', indexRouter);
 app.use('/alunocarro', alunocarroRouter);
@@ -54,6 +56,11 @@ app.use('/mqtt', mqttRouter);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/password-recovery', passwordRecoveryRouter);
 
+// Inicialização do Sequelize
 const sequelize = new Sequelize(dbConfig);
+
+sequelize.authenticate()
+  .then(() => console.log('Conexão bem-sucedida com o banco de dados.'))
+  .catch(err => console.error('Erro ao conectar com o banco de dados:', err));
 
 module.exports = { app, sequelize };

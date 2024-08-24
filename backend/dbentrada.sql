@@ -11,7 +11,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -32,7 +31,8 @@ USE `dbentrada`;
 
 CREATE TABLE `aluno` (
   `matriculaAluno` bigint NOT NULL,
-  `noAluno` varchar(100) NOT NULL
+  `noAluno` varchar(100) NOT NULL,
+  PRIMARY KEY (`matriculaAluno`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -67,7 +67,7 @@ DELIMITER ;
 --
 
 CREATE TABLE `carro` (
-  `idCarro` int NOT NULL,
+  `idCarro` int NOT NULL AUTO_INCREMENT,
   `marcaCarro` varchar(50) NOT NULL,
   `modeloCarro` varchar(80) NOT NULL,
   `anoCarro` int NOT NULL,
@@ -75,7 +75,9 @@ CREATE TABLE `carro` (
   `codigoEtiqueta` varchar(50) NOT NULL,
   `validadeEtiqueta` datetime NOT NULL,
   `matriculaRel` bigint NOT NULL,
-  `placaCarro` varchar(50) NOT NULL
+  `placaCarro` varchar(50) NOT NULL,
+  PRIMARY KEY (`idCarro`),
+  KEY `matriculaRel` (`matriculaRel`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -110,9 +112,13 @@ DELIMITER ;
 --
 
 CREATE TABLE `login` (
-  `idlogin` int NOT NULL,
+  `idlogin` int NOT NULL AUTO_INCREMENT,
   `usuario` varchar(150) NOT NULL,
-  `senha` varchar(150) NOT NULL
+  `senha` varchar(150) NOT NULL,
+  `email` varchar(150) NOT NULL UNIQUE,
+  `resetToken` varchar(64) DEFAULT NULL,
+  `resetTokenExpire` bigint DEFAULT NULL,
+  PRIMARY KEY (`idlogin`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -122,11 +128,12 @@ CREATE TABLE `login` (
 --
 
 CREATE TABLE `logs` (
-  `idlogs` int NOT NULL,
+  `idlogs` int NOT NULL AUTO_INCREMENT,
   `operacao` varchar(50) NOT NULL,
   `usuario` varchar(50) NOT NULL,
   `dataoperacao` datetime NOT NULL,
-  `detalhe` text NOT NULL
+  `detalhe` text NOT NULL,
+  PRIMARY KEY (`idlogs`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -136,146 +143,72 @@ CREATE TABLE `logs` (
 --
 
 CREATE TABLE `SequelizeMeta` (
-  `name` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL
+  `name` varchar(255) COLLATE utf8mb3_unicode_ci NOT NULL,
+  PRIMARY KEY (`name`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estrutura stand-in para view `vwalunocarro`
--- (Veja abaixo para a visão atual)
---
-CREATE TABLE `vwalunocarro` (
-`Aluno` varchar(100)
-,`Ano` int
-,`CNHvalida` tinyint(1)
-,`codigoEtiqueta` varchar(50)
-,`Marca` varchar(50)
-,`Matricula` bigint
-,`Modelo` varchar(80)
-,`Placa` varchar(50)
-,`validadeEtiqueta` datetime
-);
 
 -- --------------------------------------------------------
 
 --
 -- Estrutura para view `vwalunocarro`
 --
-DROP TABLE IF EXISTS `vwalunocarro`;
+DROP VIEW IF EXISTS `vwalunocarro`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `vwalunocarro`  AS SELECT `c`.`marcaCarro` AS `Marca`, `c`.`modeloCarro` AS `Modelo`, `c`.`anoCarro` AS `Ano`, `a`.`noAluno` AS `Aluno`, `a`.`matriculaAluno` AS `Matricula`, `c`.`codigoEtiqueta` AS `codigoEtiqueta`, `c`.`validaCnh` AS `CNHvalida`, `c`.`placaCarro` AS `Placa`, `c`.`validadeEtiqueta` AS `validadeEtiqueta` FROM (`carro` `c` join `aluno` `a` on((`a`.`matriculaAluno` = `c`.`matriculaRel`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `vwalunocarro` AS
+SELECT 
+    `c`.`marcaCarro` AS `Marca`, 
+    `c`.`modeloCarro` AS `Modelo`, 
+    `c`.`anoCarro` AS `Ano`, 
+    `a`.`noAluno` AS `Aluno`, 
+    `a`.`matriculaAluno` AS `Matricula`, 
+    `c`.`codigoEtiqueta` AS `codigoEtiqueta`, 
+    `c`.`validaCnh` AS `validaCnh` 
+FROM 
+    `carro` `c` 
+    INNER JOIN `aluno` `a` 
+    ON `c`.`matriculaRel` = `a`.`matriculaAluno`;
 
---
--- Índices para tabelas despejadas
---
-
---
--- Índices de tabela `aluno`
---
-ALTER TABLE `aluno`
-  ADD PRIMARY KEY (`matriculaAluno`);
-
---
--- Índices de tabela `carro`
---
-ALTER TABLE `carro`
-  ADD PRIMARY KEY (`idCarro`),
-  ADD KEY `matriculaRel` (`matriculaRel`);
+-- --------------------------------------------------------
 
 --
--- Índices de tabela `login`
---
-ALTER TABLE `login`
-  ADD PRIMARY KEY (`idlogin`);
-
---
--- Índices de tabela `logs`
---
-ALTER TABLE `logs`
-  ADD PRIMARY KEY (`idlogs`);
-
---
--- Índices de tabela `SequelizeMeta`
---
-ALTER TABLE `SequelizeMeta`
-  ADD PRIMARY KEY (`name`),
-  ADD UNIQUE KEY `name` (`name`);
-
---
--- AUTO_INCREMENT para tabelas despejadas
+-- Estrutura para tabela `tokens`
 --
 
---
--- AUTO_INCREMENT de tabela `carro`
---
-ALTER TABLE `carro`
-  MODIFY `idCarro` int NOT NULL AUTO_INCREMENT;
+CREATE TABLE `tokens` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `userId` int NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `createdAt` datetime NOT NULL,
+  `expiresAt` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `token` (`token`),
+  KEY `userId` (`userId`),
+  CONSTRAINT `tokens_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `login` (`idlogin`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- AUTO_INCREMENT de tabela `login`
---
-ALTER TABLE `login`
-  MODIFY `idlogin` int NOT NULL AUTO_INCREMENT;
+-- --------------------------------------------------------
 
---
--- AUTO_INCREMENT de tabela `logs`
---
-ALTER TABLE `logs`
-  MODIFY `idlogs` int NOT NULL AUTO_INCREMENT;
-
---
--- Restrições para tabelas despejadas
---
-
---
--- Restrições para tabelas `carro`
---
-ALTER TABLE `carro`
-  ADD CONSTRAINT `carro_ibfk_1` FOREIGN KEY (`matriculaRel`) REFERENCES `aluno` (`matriculaAluno`) ON DELETE CASCADE ON UPDATE CASCADE;
-
-DELIMITER $$
 --
 -- Eventos
 --
-CREATE DEFINER=`root`@`%` EVENT `delete_old_logs` ON SCHEDULE EVERY 1 DAY STARTS '2023-11-08 16:36:20' ON COMPLETION NOT PRESERVE ENABLE DO DELETE FROM logs WHERE dataoperacao < NOW() - INTERVAL 30 DAY$$
 
-DELIMITER ;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
--- Verifique se a tabela `users` já foi criada e está com a seguinte estrutura:
-
-CREATE TABLE IF NOT EXISTS `users` (
-    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `username` VARCHAR(255) NOT NULL,
-    `email` VARCHAR(255) NOT NULL,
-    `password` VARCHAR(255) NOT NULL,
-    `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Tabela `tokens` que faz referência à tabela `users`
-
-CREATE TABLE `tokens` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `userId` INT NOT NULL,
-    `token` VARCHAR(255) NOT NULL,
-    `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- A coluna 'expiresAt' será usada para armazenar a data de expiração do token.
-    `expiresAt` TIMESTAMP AS (`createdAt` + INTERVAL 1 HOUR) STORED,
-    CONSTRAINT `fk_user` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-
--- Opcional: criar um evento para limpar tokens expirados automaticamente
-CREATE EVENT delete_expired_tokens
-ON SCHEDULE EVERY 1 HOUR
+DELIMITER $$
+CREATE EVENT `delete_old_logs`
+ON SCHEDULE EVERY 1 DAY
+STARTS '2024-08-24 00:00:00'
 DO
-    DELETE FROM tokens WHERE expiresAt < NOW();
+  DELETE FROM logs WHERE dataoperacao < NOW() - INTERVAL 30 DAY;
+$$
+DELIMITER ;
 
-ALTER TABLE users
-ADD COLUMN resetToken VARCHAR(255),
-ADD COLUMN resetTokenExpire DATETIME;
+DELIMITER $$
+CREATE EVENT `delete_expired_tokens`
+ON SCHEDULE EVERY 1 DAY
+STARTS '2024-08-24 00:00:00'
+DO
+  DELETE FROM tokens WHERE expiresAt < NOW();
+$$
+DELIMITER ;
+
+COMMIT;

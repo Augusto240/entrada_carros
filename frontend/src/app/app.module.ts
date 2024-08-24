@@ -33,6 +33,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { PasswordresetComponent } from './passwordreset/passwordreset.component';
 import { ToastModule } from 'primeng/toast'
 import { MessagesModule } from 'primeng/messages';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 LOAD_WASM().subscribe();
 
@@ -48,7 +49,8 @@ LOAD_WASM().subscribe();
     AnaliseComponent,
     MenuComponent,
     NovousuarioComponent,
-    PasswordresetComponent
+    PasswordresetComponent,
+    ResetPasswordComponent
   ],
   imports: [
     BrowserModule,

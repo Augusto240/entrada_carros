@@ -1,89 +1,113 @@
 // routes/passwordRecovery.js
 const express = require('express');
 const router = express.Router();
-const db = require('../config/dbentrada');
+const connection = require('../config/dbentrada');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const passwordRecoveryController = require('../controllers/passwordRecoveryController');
-const { User } = require('../models/user'); // Ajuste conforme o nome do modelo
-require('dotenv').config({ path: require('path').resolve('../.env') });; // Carregar variáveis de ambiente
+require('dotenv').config({ path: require('path').resolve('../.env') });
 
-// Configurar o transporte de e-mail
-const transporter = nodemailer.createTransport({
-    host: 'smtp-mail.outlook.com',
-    port: 587,
-    secure: true, // ou outro serviço de e-mail
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+// Função para gerar um token aleatório
+function generateToken() {
+    return crypto.randomBytes(32).toString('hex');
+}
 
-// Solicitar recuperação de senha
-
-router.post('/request', async (req, res) => {
+// Enviar e-mail de recuperação de senha
+exports.sendRecoveryEmail = async (req, res) => {
     const { email } = req.body;
 
     try {
-        const user = await User.findOne({ where: { email } });
-        if (!user) {
-            return res.status(404).send('Usuário não encontrado');
+        // Verifica se o usuário está cadastrado
+        const [user] = await connection.execute('SELECT * FROM login WHERE email = ?', [email]);
+
+        if (!user.length) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
-        const token = crypto.randomBytes(20).toString('hex');
-        await user.update({ resetPasswordToken: token, resetPasswordExpires: Date.now() + 3600000 });
+        const resetToken = generateToken();
+        const resetTokenExpire = Date.now() + 3600000; // Token válido por 1 hora
+
+        // Armazena o token e a data de expiração no banco de dados
+        await connection.execute(
+            'UPDATE login SET resetToken = ?, resetTokenExpire = ? WHERE email = ?',
+            [resetToken, resetTokenExpire, email]
+        );
+
+        // Configura o serviço de e-mail (usando Nodemailer)
+        const transporter = nodemailer.createTransport({
+            service: 'Outlook',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+        });
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: process.env.SMTP_USER,
             to: email,
             subject: 'Recuperação de Senha',
-            text: `Você está recebendo este e-mail porque recebemos uma solicitação de recuperação de senha para sua conta.\n\n
-            Por favor, clique no seguinte link ou cole-o no seu navegador para concluir o processo:\n\n
-            http://${req.headers.host}/reset/${token}\n\n
-            Se você não solicitou isso, ignore este e-mail e sua senha permanecerá inalterada.\n`
+            html: `
+                <p>Você solicitou a recuperação de senha. Clique no link abaixo para redefinir sua senha:</p>
+                <a href="${process.env.FRONTEND_URL}/reset-password?token=${resetToken}">Redefinir Senha</a>
+                <p>O link é válido por 1 hora.</p>
+            `,
         };
 
         await transporter.sendMail(mailOptions);
-        res.status(200).send('Instruções de recuperação de senha enviadas para o e-mail.');
 
+        res.status(200).json({ message: 'E-mail de recuperação enviado com sucesso' });
     } catch (error) {
-        console.error('Erro ao enviar e-mail de recuperação de senha:', error);
-        res.status(500).send('Erro ao enviar e-mail de recuperação de senha.');
+        res.status(500).json({ message: 'Erro ao enviar o e-mail de recuperação', error });
     }
-});
+};
 
-
-// Resetar a senha
-
-router.post('/reset/:token', async (req, res) => {
-    const { token } = req.params;
-    const { password } = req.body;
+// Solicitar a recuperação de senha
+exports.requestPasswordReset = async (req, res) => {
+    const { email } = req.body;
 
     try {
-        // Verifica o token e sua validade
-        const user = await User.findOne({
-            where: {
-                resetPasswordToken: token,
-                resetPasswordExpires: { [Op.gt]: Date.now() }
-            }
-        });
-
-        if (!user) {
-            return res.status(400).send('Token inválido ou expirado.');
+        // Verifica se o usuário existe na tabela `login`
+        const [rows] = await connection.execute('SELECT * FROM login WHERE email = ?', [email]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
-        // Atualiza a senha
-        user.password = bcrypt.hashSync(password, 10); // Use bcrypt para hash da senha
-        user.resetPasswordToken = null;
-        user.resetPasswordExpires = null;
-        await user.save();
+        // Gera um token de redefinição
+        const resetToken = generateToken();
+        const resetTokenExpire = Date.now() + 3600000; // 1 hora para expirar
 
-        res.status(200).send('Senha atualizada com sucesso.');
+        // Atualiza o usuário com o token e a data de expiração
+        await connection.execute('UPDATE login SET resetToken = ?, resetTokenExpire = ? WHERE email = ?', [resetToken, resetTokenExpire, email]);
+
+        // Enviar o e-mail de recuperação de senha
+        await this.sendRecoveryEmail(req, res);
 
     } catch (error) {
-        res.status(500).send('Erro ao redefinir a senha.');
+        console.error(error);
+        res.status(500).json({ message: 'Erro no servidor' });
     }
-});
+};
+
+// Redefinir a senha
+exports.resetPassword = async (req, res) => {
+    const { resetToken, newPassword } = req.body;
+
+    try {
+        // Verifica o token de redefinição e a expiração na tabela `login`
+        const [rows] = await connection.execute('SELECT * FROM login WHERE resetToken = ? AND resetTokenExpire > ?', [resetToken, Date.now()]);
+        if (rows.length === 0) {
+            return res.status(400).json({ message: 'Token inválido ou expirado' });
+        }
+
+        // Atualiza a senha do usuário e remove o token
+        const hashedPassword = bcrypt.hashSync(newPassword, 10);
+        await connection.execute('UPDATE login SET senha = ?, resetToken = NULL, resetTokenExpire = NULL WHERE resetToken = ?', [hashedPassword, resetToken]);
+
+        res.status(200).json({ message: 'Senha redefinida com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro no servidor' });
+    }
+};
 
 module.exports = router;

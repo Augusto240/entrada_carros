@@ -1,7 +1,8 @@
+const { Op } = require('sequelize');
+const app = require('../app');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const { Op } = require('sequelize');
-const Login = require('../models/login'); // Certifique-se de que este caminho está correto
+const Login = require('../models/login');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 

@@ -1,5 +1,9 @@
+const sequelize = require('../db');
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../app'); // Certifique-se de que o caminho está correto
+
+if (!sequelize) {
+  throw new Error('A instância do Sequelize não foi encontrada. Verifique a exportação em app.js.');
+}
 
 const Login = sequelize.define('Login', {
   idlogin: {

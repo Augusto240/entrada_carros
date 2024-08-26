@@ -1,11 +1,13 @@
 // routes/passwordRecovery.js
+const app = require('../app');
+const sequelize = app.sequelize;
 const express = require('express');
 const router = express.Router();
 const { requestPasswordReset, resetPassword } = require('../controllers/passwordRecoveryController');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const { Login } = require('../models/login'); // Ajuste conforme o caminho do modelo
+const { Login } = require('../models/login'); 
 require('dotenv').config();
 
 // Função para gerar um token aleatório

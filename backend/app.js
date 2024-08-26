@@ -1,10 +1,9 @@
-// app.js
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
-const Sequelize = require('sequelize');
+const { Sequelize } = require('sequelize');
 const dbConfig = require('./config/dbentrada'); // Configuração do Sequelize
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
@@ -20,6 +19,13 @@ const passwordRecoveryRouter = require('./routes/passwordRecovery');
 require('dotenv').config();
 
 const app = express();
+
+// Inicialização do Sequelize
+const sequelize = new Sequelize(dbConfig);
+
+sequelize.authenticate()
+  .then(() => console.log('Conexão bem-sucedida com o banco de dados.'))
+  .catch(err => console.error('Erro ao conectar com o banco de dados:', err));
 
 // Configurações de middleware
 app.use(cors({
@@ -56,11 +62,5 @@ app.use('/mqtt', mqttRouter);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/password-recovery', passwordRecoveryRouter);
 
-// Inicialização do Sequelize
-const sequelize = new Sequelize(dbConfig);
-
-sequelize.authenticate()
-  .then(() => console.log('Conexão bem-sucedida com o banco de dados.'))
-  .catch(err => console.error('Erro ao conectar com o banco de dados:', err));
-
+// Exporta a instância do Sequelize
 module.exports = { app, sequelize };

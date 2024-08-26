@@ -214,5 +214,4 @@ DELIMITER ;
 
 COMMIT;
 
-INSERT INTO login (usuario, senha, role) VALUES ('guto', 'guto', 'admin');
-INSERT INTO login (usuario, senha, role) VALUES ('auggie', 'auggie', 'admin');
+INSERT INTO login (usuario, senha, email, role) VALUES ('guto', 'guto', 'jose.aug18@outlook.com', 'admin');

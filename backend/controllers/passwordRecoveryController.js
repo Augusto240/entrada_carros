@@ -1,85 +1,81 @@
 const { Op } = require('sequelize');
-const app = require('../app');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const Login = require('../models/login');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Configuração do Nodemailer
+if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.EMAIL_FROM) {
+    console.error('Erro: As variáveis de ambiente SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS e EMAIL_FROM devem estar definidas.');
+    process.exit(1);
+}
+
 const transporter = nodemailer.createTransport({
-    service: 'Outlook',
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: false,
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
     }
 });
 
 exports.requestPasswordReset = async (req, res) => {
-    const { email } = req.body;
     try {
-        // Verificar se o e-mail existe na tabela login
+        const { email } = req.body;
         const user = await Login.findOne({ where: { email } });
-
         if (!user) {
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
-        // Gerar token de recuperação
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetTokenExpire = Date.now() + 3600000; // 1 hora
+        const resetTokenExpire = Date.now() + 3600000;
 
-        // Atualizar o token e a expiração no banco de dados
         await user.update({
-            resetToken: resetToken,
-            resetTokenExpire: resetTokenExpire
+            resetToken,
+            resetTokenExpire
         });
 
-        // Enviar e-mail
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: process.env.EMAIL_FROM,
             to: email,
-            subject: 'Solicitação de recuperação de senha',
-            text: `Você solicitou a recuperação de senha. Utilize o seguinte link para definir uma nova senha: http://localhost:8080/reset-password/${resetToken}`
+            subject: 'Redefinição de Senha',
+            text: `Você solicitou a redefinição de sua senha. Use o seguinte token: ${resetToken}`,
+            html: `<p>Você solicitou a redefinição de sua senha. Use o seguinte token: <b>${resetToken}</b></p>`
         };
 
-        try {
-            await transporter.sendMail(mailOptions);
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Erro ao enviar o e-mail de recuperação:', error);
+                return res.status(500).json({ message: 'Erro ao enviar o e-mail de recuperação' });
+            }
+            console.log('E-mail enviado:', info.response);
             res.status(200).json({ message: 'E-mail de recuperação enviado com sucesso' });
-        } catch (error) {
-            console.error('Erro ao enviar o e-mail de recuperação:', error);
-            res.status(500).json({ message: 'Erro ao enviar o e-mail de recuperação', error });
-        }
+        });
     } catch (error) {
-        console.error('Erro ao processar a solicitação de recuperação de senha:', error);
-        res.status(500).json({ message: 'Erro ao processar a solicitação', error });
+        console.error('Erro ao solicitar a redefinição de senha:', error);
+        res.status(500).json({ message: 'Erro ao solicitar a redefinição de senha' });
     }
 };
 
 exports.resetPassword = async (req, res) => {
-    const { token } = req.params;
-    const { password } = req.body;
-
     try {
-        const user = await Login.findOne({
-            where: {
-                resetToken: token,
-                resetTokenExpire: { [Op.gt]: Date.now() }
-            }
-        });
-
+        const { token, newPassword } = req.body;
+        const user = await Login.findOne({ where: { resetToken: token, resetTokenExpire: { [Op.gt]: Date.now() } } });
         if (!user) {
-            return res.status(400).send('Token inválido ou expirado.');
+            return res.status(400).json({ message: 'Token inválido ou expirado' });
         }
 
-        user.password = bcrypt.hashSync(password, 10);
-        user.resetToken = null;
-        user.resetTokenExpire = null;
-        await user.save();
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await user.update({
+            password: hashedPassword,
+            resetToken: null,
+            resetTokenExpire: null
+        });
 
-        res.status(200).send('Senha atualizada com sucesso.');
+        res.status(200).json({ message: 'Senha redefinida com sucesso' });
     } catch (error) {
         console.error('Erro ao redefinir a senha:', error);
-        res.status(500).send('Erro ao redefinir a senha.');
+        res.status(500).json({ message: 'Erro ao redefinir a senha' });
     }
 };

@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const pool = mysql.createPool({
-    host: 'localhost',
+    host: 'db',
     user: 'root',
     password: '',
     database: 'dbentrada',
